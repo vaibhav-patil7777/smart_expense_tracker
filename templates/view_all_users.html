@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Registered Users</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 4px; }
+        .btn-view { background-color: #3498db; color: white; }
+        .btn-block { background-color: #e74c3c; color: white; }
+        .btn-unblock { background-color: #2ecc71; color: white; }
+    </style>
+</head>
+<body>
+
+<h2>All Registered Users</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Is Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.is_active }}</td>
+            <td>
+                <a href="{% url 'view_user_dashboard' user.id %}">
+                    <button class="btn btn-view">View Dashboard</button>
+                </a>
+                {% if request.user.is_superuser %}
+                    {% if user.is_active %}
+                        <a href="{% url 'block_user' user.id %}">
+                            <button class="btn btn-block">Block</button>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'unblock_user' user.id %}">
+                            <button class="btn btn-unblock">Unblock</button>
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

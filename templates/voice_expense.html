@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎙️ Voice Expense Entry</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      font-family: "Times New Roman", Times, serif;
+      background: linear-gradient(to right, #f0f4ff, #e0eafc);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background-color: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #34495e;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background-color: #3498db;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 40px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 30px;
+    }
+
+    .mic {
+      background-color: red;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      color: green;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+  <h1>✅ Expense Added Successfully!</h1>
+  <p>Your expense has been recorded and saved. You can now return to your dashboard to view or add more.</p>
+  <a href="{% url 'user_dashboard' user_id=request.user.id %}" class="btn">Back to Dashboard</a>
+</div> <br>
+
+<div class="container">
+  
+  <h2>🎙️ Speak to Add Expense</h2>
+
+  <form id="voice-expense-form" method="POST" action="/add/voice/">
+    {% csrf_token %}
+    <input type="number" id="amount" name="amount" class="hidden">
+    <input type="text" id="category" name="category" class="hidden">
+    <input type="text" id="description" name="description" class="hidden">
+    <input type="date" id="date" name="date" class="hidden" value="{{ today }}">
+  </form>
+
+  <button type="button" class="mic" onclick="startVoiceInput()">🎙️</button>
+
+  {% if message %}
+    <div class="message">{{ message }}</div>
+  {% endif %}
+</div>
+
+<script>
+  function startVoiceInput() {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert("Your browser doesn't support speech recognition.");
+      return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      alert("Speak now...");
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      processSpeech(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      alert("Error occurred in recognition: " + event.error);
+    };
+
+    recognition.start();
+  }
+
+  function processSpeech(text) {
+    console.log("Voice Input:", text);
+
+    let amountMatch = text.match(/(\d+(\.\d+)?)/);
+    let categoryMatch = text.match(/(?:on|per|for|kharch.*?)(\w+)/i);
+
+    let amount = amountMatch ? amountMatch[1] : "";
+    let category = categoryMatch ? categoryMatch[1] : "Uncategorized";
+
+    document.getElementById("amount").value = amount;
+    document.getElementById("category").value = category;
+    document.getElementById("description").value = text;
+    document.getElementById("date").value = new Date().toISOString().split('T')[0];
+
+    setTimeout(() => {
+      document.getElementById("voice-expense-form").submit();
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>

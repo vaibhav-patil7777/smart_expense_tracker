@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Expense</title>
+    <style>
+        body { font-family: sans-serif; background: #f2f5f9; padding: 30px; }
+        .form-container {
+            background: white;
+            padding: 25px;
+            max-width: 600px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        input[type="submit"] {
+            background: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>✏️ Edit Expense</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Amount (₹):</label>
+        <input type="number" name="amount" value="{{ expense.amount }}" required>
+
+        <label>Category:</label>
+        <select name="category" required>
+            {% for option in category_options %}
+            <option value="{{ option }}" {% if expense.category == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Description:</label>
+        <textarea name="description">{{ expense.description }}</textarea>
+
+        <label>Date:</label>
+        <input type="date" name="date" value="{{ expense.date }}" required>
+
+        <label>Payment Mode:</label>
+        <select name="payment_mode" required>
+            {% for option in payment_modes %}
+            <option value="{{ option }}" {% if expense.payment_mode == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="submit" value="Update Expense">
+    </form>
+</div>
+</body>
+</html>

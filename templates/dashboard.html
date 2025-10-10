@@ -1,0 +1,322 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Expense Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; color: #333; }
+    .container { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 220px; background-color: #2d6cdf; color: white;
+      padding: 20px; position: fixed; height: 100vh; overflow-y: auto;
+    }
+    .sidebar h2 { font-size: 20px; margin-bottom: 30px; text-align: center; }
+    .sidebar a {
+      display: block; padding: 10px 15px; color: white;
+      text-decoration: none; border-radius: 4px;
+      margin-bottom: 10px; font-weight: bold;
+    }
+    .sidebar a:hover, .sidebar a.active { background-color: #1e4fab; }
+    .main-content { margin-left: 220px; flex-grow: 1; padding: 20px; }
+    header {
+      background-color: white; padding: 15px 25px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px; display: flex;
+      justify-content: space-between; align-items: center; border-radius: 8px;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+    .cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white; padding: 20px; border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .btn {
+      padding: 8px 16px; background-color: #2d6cdf;
+      color: white; border: none; border-radius: 4px;
+      margin: 10px 5px 0 0; cursor: pointer;
+    }
+    .btn:hover { background-color: #1e4fab; }
+    .btn-outline {
+      background: white; color: #2d6cdf;
+      border: 1px solid #2d6cdf;
+    }
+    .btn-outline:hover { background-color: #2d6cdf; color: white; }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 15px;
+      background: white; border-radius: 8px; overflow: hidden;
+    }
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+    th { background-color: #f1f1f1; }
+    label { display: block; margin: 12px 0 5px; }
+    input, select {
+      width: 100%; padding: 10px; margin-bottom: 10px;
+      border-radius: 4px; border: 1px solid #ccc;
+    }
+    .alert {
+      background-color: #fff3f3; border: 1px solid red;
+      padding: 10px; border-radius: 5px; color: red; margin-bottom: 10px;
+    }
+    .warning { background-color: #fff8e5; border-color: #ffc107; color: #856404; }
+    @media screen and (max-width: 768px) {
+      .container { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="sidebar">
+      <h2>Smart Tracker</h2>
+      <a onclick="showSection('dashboard')" class="active">Dashboard</a>
+      <a onclick="showSection('expenses')">Expenses</a>
+      <a onclick="showSection('add-manual')">Manual Entry</a>
+      <a onclick="showSection('add-upload')">Upload File</a>
+      <a onclick="showSection('add-voice')">Voice Entry</a>
+      <a onclick="showSection('budget')">Set Budget</a>
+      <a onclick="showSection('about')">About</a>
+      <a href="{% url 'logout' %}">Logout</a>
+    </nav>
+    <div class="main-content">
+      <header>
+        <div>
+          <h3>Welcome, {{ user.username }}</h3>
+          <small>Total Expense: ₹{{ total_expense }}</small>
+        </div>
+      </header>
+
+          <!-- Dashboard Section -->
+    <section id="dashboard" class="section active">
+      {% if warning %}
+        <div class="alert">{{ warning }}</div>
+      {% endif %}
+      {% if over_budget %}
+        <div class="alert warning">⚠️ Budget exceeded for {{ selected_month_name }}!</div>
+      {% endif %}
+
+      <div class="cards">
+        <div class="card">
+          <h4>Filter Expenses</h4>
+          <form method="get">
+            <label>Month:</label>
+            <select name="month">
+              <option value="">-- All --</option>
+              {% for num, name in month_options %}
+              <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+            <label>Category:</label>
+            <select name="category">
+              <option value="">-- All --</option>
+              {% for cat in unique_categories %}
+              <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+            <label>Chart Type:</label>
+            <select name="chart_type">
+              <option value="line" {% if chart_type == 'line' %}selected{% endif %}>Line</option>
+              <option value="bar" {% if chart_type == 'bar' %}selected{% endif %}>Bar</option>
+              <option value="pie" {% if chart_type == 'pie' %}selected{% endif %}>Pie</option>
+            </select>
+            <button type="submit" class="btn">Apply</button>
+            <a href="{% url 'download_csv' %}" class="btn btn-outline">Download CSV</a>
+            <a href="{% url 'download_pdf' %}" class="btn btn-outline">Download PDF</a>
+          </form>
+        </div>
+
+        {% if category_chart %}
+        <div class="card">
+          <h4>Category Chart</h4>
+          <img src="data:image/png;base64,{{ category_chart }}" alt="Chart" style="width: 100%;">
+        </div>
+        {% endif %}
+
+        {% if plotly_html %}
+        <div class="card">
+          <h4>Trend Chart</h4>
+          {{ plotly_html|safe }}
+        </div>
+        {% endif %}
+      </div>
+      <div class="card">
+  <h3>📅 Next Month Prediction</h3>
+  {% if next_month_prediction %}
+    <p>Expected Expense: <strong>₹{{ next_month_prediction }}</strong></p>
+  {% else %}
+    <p>📉 Not enough data to predict.</p>
+  {% endif %}
+</div>
+
+    </section>
+
+    <!-- Expenses Section -->
+    <section id="expenses" class="section">
+      <h3>📋 Expense History</h3>
+      {% if expenses %}
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Payment</th>
+            <th>Bill</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exp in expenses %}
+          <tr>
+            <td>{{ exp.date }}</td>
+            <td>₹{{ exp.amount }}</td>
+            <td>{{ exp.category }}</td>
+            <td>{{ exp.description }}</td>
+            <td>{{ exp.payment_mode }}</td>
+            <td>{% if exp.bill_file %}<a href="{{ exp.bill_file.url }}" target="_blank">View</a>{% else %}-{% endif %}</td>
+            <td>
+              <a href="{% url 'edit_expense' exp.id %}" class="btn btn-sm">✏️</a>
+              <a href="{% url 'delete_expense' exp.id %}" class="btn btn-sm btn-outline">🗑️</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No expense records found.</p>
+      {% endif %}
+    </section>
+
+
+
+
+
+
+
+      <!-- Manual Entry Section -->
+      <section id="add-manual" class="section">
+        <h3>➕ Manual Expense Entry</h3>
+        <form method="post" action="{% url 'manual_expense_add' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label>Amount:</label>
+          <input type="number" name="amount" required>
+          <label>Category:</label>
+          <input type="text" name="category" required>
+          <label>Description:</label>
+          <input type="text" name="description">
+          <label>Date:</label>
+          <input type="date" name="date">
+          <label>Payment Mode:</label>
+          <select name="payment_mode" required>
+            <option value="">-- Select --</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="UPI">UPI</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+          </select>
+          <label>Upload Bill:</label>
+          <input type="file" name="bill_file" accept=".jpg,.png,.pdf,.xlsx,.csv">
+          <button type="submit" class="btn">Add Expense</button>
+        </form>
+      </section>
+
+      <!-- Upload File Section -->
+      <section id="add-upload" class="section">
+        <h3>📁 Upload Expense File</h3>
+        <form method="post" action="{% url 'upload_expense_file' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label>Select File (CSV, XLSX):</label>
+          <input type="file" name="expense_file" accept=".csv,.xlsx" required>
+          <button type="submit" class="btn">Upload</button>
+        </form>
+      </section>
+
+      <!-- Voice Entry Section -->
+      <section id="add-voice" class="section">
+        <h3>🎙️ Add Expense using Voice</h3>
+        <p><strong>Say:</strong> "1550 on food" or "300 on travel"</p>
+        <button id="start-record-btn" class="btn btn-success">Start Voice Input</button>
+        <p id="voice-result" class="text-info"></p>
+        <form id="voice-expense-form" method="POST" action="{% url 'save_voice_expense' %}">
+          {% csrf_token %}
+          <input type="hidden" name="amount" id="voice-amount">
+          <input type="hidden" name="category" id="voice-category">
+          <button type="submit" class="btn btn-primary d-none" id="submit-voice-btn">Save Expense</button>
+        </form>
+      </section>
+
+      <!-- Budget Section -->
+      <section id="budget" class="section">
+        <h3>💰 Set Budget</h3>
+        <form method="post" action="{% url 'set_budget' %}">
+          {% csrf_token %}
+          <label>Select Month:</label>
+          <select name="month" required>
+            <option value="">-- Select Month --</option>
+            {% for num, name in month_options %}
+            <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+          <label>Budget Amount:</label>
+          <input type="number" name="amount" value="{{ current_budget }}" required>
+          <button type="submit" class="btn">Save Budget</button>
+        </form>
+      </section>
+
+      <!-- About Section -->
+      <section id="about" class="section">
+        <h3>ℹ️ About This App</h3>
+        <p>This Smart Expense Tracker helps users manage, track, and analyze their expenses using interactive charts and budget settings. Built with Django and intelligent features.</p>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Voice Script -->
+  <script>
+    const startBtn = document.getElementById('start-record-btn');
+    const resultText = document.getElementById('voice-result');
+    const voiceAmount = document.getElementById('voice-amount');
+    const voiceCategory = document.getElementById('voice-category');
+    const submitBtn = document.getElementById('submit-voice-btn');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.onstart = () => { resultText.innerText = "Listening..."; };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      resultText.innerText = "Heard: " + transcript;
+      const match = transcript.match(/(\d+)\s+on\s+(\w+)/i);
+      if (match) {
+        voiceAmount.value = match[1];
+        voiceCategory.value = match[2];
+        resultText.innerText += "\nParsed: ₹" + match[1] + " on " + match[2];
+        submitBtn.click();
+      } else {
+        resultText.innerText += "\n❌ Format not recognized. Try: '100 on food'";
+      }
+    };
+
+    startBtn.addEventListener('click', () => recognition.start());
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      const link = Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.toLowerCase().includes(id.replace('add-', '')));
+      if (link) link.classList.add('active');
+    }
+  </script>
+</body>
+</html>
+
+

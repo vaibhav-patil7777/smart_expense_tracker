@@ -1,0 +1,73 @@
+{% load custom_filters %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>💰 Set Monthly Budget</title>
+    <style>
+        .budget-container {
+            max-width: 500px;
+            margin: auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="budget-container">
+    <h2>💸 Set Monthly Budget</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="month">Month:</label>
+        <select name="month" required>
+            <option value="">-- Select Month --</option>
+            {% for num, name in months %}
+                <option value="{{ num }}" {% if selected_month == num|stringformat:"s" %}selected{% endif %}>
+                    {{ name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="amount">Budget Amount (₹):</label>
+        <input type="number" name="amount" value="{{ current_budget }}" placeholder="Enter your budget" required>
+
+        <button type="submit" class="btn">💾 Save Budget</button>
+    </form>
+</div>
+
+</body>
+</html>

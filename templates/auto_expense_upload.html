@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Expense Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            background: #fff;
+            padding: 25px;
+            max-width: 500px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        input[type="file"] {
+            margin-top: 8px;
+        }
+        button {
+            margin-top: 25px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .message {
+            text-align: center;
+            margin-bottom: 20px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📁 Upload Expense File</h2>
+
+    {% if messages %}
+        <div class="message">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+<form method="POST" enctype="multipart/form-data" action="{% url 'upload_expense_file' %}">
+
+    {% csrf_token %}
+    <label>Select Expense File (.csv):</label><br>
+    <input type="file" name="expense_file" required><br><br>
+    <button type="submit">Upload</button>
+</form>
+
+
+</body>
+</html>
