@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# build.sh
-set -o errexit  # stop build on error
+# exit on error
+set -o errexit
 
-pip install --upgrade pip
+pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 
 python manage.py collectstatic --noinput
+python manage.py migrate
