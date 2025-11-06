@@ -1,6 +1,5 @@
 # requirements.txt for Smart Expense Tracker (Django)
 # (Core)
-python-3.10.12
 
 Django==4.2
 djangorestframework==3.14.0
