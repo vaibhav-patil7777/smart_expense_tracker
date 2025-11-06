@@ -1,35 +1,29 @@
-# Django Core
-Django==4.2
+# Django
+Django==4.2.11
 djangorestframework==3.14.0
-django-crispy-forms==2.1
-django-filter==23.1
 django-environ==0.10.0
-python-dotenv==1.0.0
+django-cors-headers==4.3.1
+django-crispy-forms==2.1
+whitenoise==6.5.0
+gunicorn==21.2.0
 
 # Database
 psycopg2-binary==2.9.9
 
-# Static & Deployment
-whitenoise==6.5.0
-gunicorn==21.2.0
-django-cors-headers==4.3.1
+# ML + Data
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+matplotlib==3.8.4
+seaborn==0.13.2
+plotly==5.22.0
 
-# Data & ML
-numpy==1.24.4
-pandas==1.5.3
-scikit-learn==1.2.2
-
-# Plots
-matplotlib==3.7.1
-seaborn==0.12.2
-plotly==5.15.0
-
-# PDF
-reportlab==4.0.0
-xhtml2pdf==0.2.8
-
-# NLP
+# NLP + PDF
 nltk==3.8.1
+reportlab==4.2.0
+xhtml2pdf==0.2.8
+Pillow==10.2.0
 
-# Pillow (image dependency fix)
-Pillow==9.5.0
+# Build tools
+setuptools==70.0.0
+wheel==0.43.0
