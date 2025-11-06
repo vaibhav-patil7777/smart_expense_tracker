@@ -1,0 +1,61 @@
+# requirements.txt for Smart Expense Tracker (Django)
+# (Core)
+Django==4.2
+djangorestframework==3.14.0
+django-crispy-forms==2.1.0
+django-filter==23.1
+django-environ==0.10.0
+python-dotenv==1.0.0
+
+# Database (pick one or keep both if you need to support either)
+mysqlclient==2.2.0
+psycopg2-binary==2.9.10
+
+# File uploads / images
+Pillow==9.5.0
+
+# Frontend / static serving / deployment
+whitenoise==6.5.0
+gunicorn==20.1.0
+django-cors-headers==3.15.0
+django-extensions==3.3.1
+
+# Data / ML / suggestions
+numpy==1.26.0
+pandas==2.1.2
+scikit-learn==1.3.2
+
+# Plots & interactive charts
+matplotlib==3.8.1
+seaborn==0.12.2
+plotly==5.15.0
+
+# PDF generation (choose one or use multiple)
+reportlab==4.0.0
+WeasyPrint==59.0
+xhtml2pdf==0.2.8
+
+# Voice / audio (voice input + TTS)
+SpeechRecognition==3.9.0
+pydub==0.25.1
+pyttsx3==2.90
+# Note: for microphone capture you may need system packages and/or PyAudio:
+# PyAudio is system-dependent; if you use it: uncomment the next line and install system deps.
+# PyAudio==0.2.13
+
+# NLP (if you use language processing for suggestions)
+nltk==3.8.1
+
+# Background tasks / scheduling (optional - useful for "next month suggestion" async jobs)
+celery==5.3.1
+redis==4.6.0
+
+# Optional / extras
+django-storages==2.1.0        # if storing files on S3 or cloud
+boto3==1.28.40                # required by django-storages for AWS S3
+
+# Security / Auth (optional)
+djangorestframework-simplejwt==5.2.2
+
+# Pin installer helper (optional)
+pip-tools==7.3.0
